@@ -7,6 +7,7 @@ app.use(bodyParser.json());
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
 const talkerJSON = './talker.json';
+const crypto = require('crypto');
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -24,6 +25,12 @@ app.get('/talker/:id', (req, res) => {
   if (!idTalker) return res.status(404).json({ message: 'Pessoa palestrante não encontrada' }); 
 
   return res.status(HTTP_OK_STATUS).json(idTalker);
+});
+app.post('/login', (req, res) => {
+  // const { email, password } = req.body;
+  // const re = /\S+@\S+\.\S+/;
+  const token = crypto.randomBytes(8).toString('hex');
+  return res.status(200).json({ token });
 });
 app.listen(PORT, () => {
   console.log('Online');
