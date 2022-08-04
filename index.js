@@ -21,14 +21,14 @@ const talkerJSON = './talker.json';
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
-app.get('/talker', (_, res) => {
-  const docJSON = fs.readFileSync(talkerJSON, 'utf-8');
+app.get('/talker', async (_, res) => {
+  const docJSON = await fs.readFile(talkerJSON, 'utf-8');
   const docJsonParse = JSON.parse(docJSON);
  return res.status(HTTP_OK_STATUS).json(docJsonParse);
 });
-app.get('/talker/:id', (req, res) => {
+app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const docJsonParse = JSON.parse(fs.readFileSync(talkerJSON, 'utf-8'));
+  const docJsonParse = JSON.parse(await fs.readFile(talkerJSON, 'utf-8'));
   const idTalker = docJsonParse.find((item) => item.id === Number(id));
   if (!idTalker) return res.status(404).json({ message: 'Pessoa palestrante não encontrada' }); 
 
@@ -87,7 +87,7 @@ async (req, res) => {
   res.status(200).json(arrayObj[talker]);
 });
 app.delete('/talker/:id', verificaAuthorization, async (req, res) => {
-  const docJsonParse = JSON.parse(fs.readFileSync(talkerJSON, 'utf-8'));
+  const docJsonParse = JSON.parse(await fs.readFile(talkerJSON, 'utf-8'));
   const { id } = req.params;
   const talker = docJsonParse.filter((r) => r.id !== Number(id));
   await fs.writeFile(talkerJSON, JSON.stringify(talker));
