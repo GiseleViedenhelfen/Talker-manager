@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const fsPromise = require('fs').promises;
+const fs = require('fs/promises');
+// const fsPromise = require('fs').promises;
 const crypto = require('crypto');
 const { 
   verificaNome,
@@ -60,18 +60,37 @@ verificaTalk,
 verificaRate,
 verificawatchedAt,
 async (req, res) => {
-  const docJsonParse = JSON.parse(fs.readFileSync(talkerJSON, 'utf-8'));
+  const response = await fs.readFile(talkerJSON, 'utf-8');
+  const docJsonParse = JSON.parse(response);
   const { name, age, talk: { watchedAt, rate } } = req.body;
-  const id = docJsonParse.length + 1;
-  const talkerAdd = { name, id, age, talk: { watchedAt, rate } };
-  await fsPromise.writeFile(talkerJSON, JSON.stringify(docJsonParse));
+  const newid = docJsonParse.length + 1;
+  const talkerAdd = { name, id: newid, age, talk: { watchedAt, rate } };
+  docJsonParse.push(talkerAdd);
+  await fs.writeFile(talkerJSON, JSON.stringify(docJsonParse));
   return res.status(201).json(talkerAdd);
+});
+app.put('/talker/:id', 
+verificaAuthorization,
+verificaNome,
+verificaIdade,
+verificaTalk,
+verificaRate,
+verificawatchedAt,
+async (req, res) => {
+  const docJsonParse = await fs.readFile(talkerJSON, 'utf-8');
+  const arrayObj = JSON.parse(docJsonParse);
+  const { name, age, talk } = req.body;
+  const { id } = req.params;
+  const talker = arrayObj.findIndex((r) => r.id === Number(id));
+  arrayObj[talker] = { ...arrayObj[talker], name, age, talk };
+  await fs.writeFile(talkerJSON, JSON.stringify(arrayObj));
+  res.status(200).json(arrayObj[talker]);
 });
 app.delete('/talker/:id', verificaAuthorization, async (req, res) => {
   const docJsonParse = JSON.parse(fs.readFileSync(talkerJSON, 'utf-8'));
   const { id } = req.params;
   const talker = docJsonParse.filter((r) => r.id !== Number(id));
-  await fsPromise.writeFile(talkerJSON, JSON.stringify(talker));
+  await fs.writeFile(talkerJSON, JSON.stringify(talker));
   res.status(204).end();
 });
 app.listen(PORT, () => {
