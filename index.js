@@ -64,9 +64,15 @@ async (req, res) => {
   const { name, age, talk: { watchedAt, rate } } = req.body;
   const id = docJsonParse.length + 1;
   const talkerAdd = { name, id, age, talk: { watchedAt, rate } };
-  docJsonParse.push(talkerAdd);
   await fsPromise.writeFile(talkerJSON, JSON.stringify(docJsonParse));
   return res.status(201).json(talkerAdd);
+});
+app.delete('/talker/:id', verificaAuthorization, async (req, res) => {
+  const docJsonParse = JSON.parse(fs.readFileSync(talkerJSON, 'utf-8'));
+  const { id } = req.params;
+  const talker = docJsonParse.filter((r) => r.id !== Number(id));
+  await fsPromise.writeFile(talkerJSON, JSON.stringify(talker));
+  res.status(204).end();
 });
 app.listen(PORT, () => {
   console.log('Online');
